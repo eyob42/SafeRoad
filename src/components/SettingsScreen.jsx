@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { LogOut, Moon, Navigation, Radio, Sun } from 'lucide-react'
+import { LogOut, Moon, Navigation, Sun } from 'lucide-react'
 import { useSession } from '../hooks/useSession.jsx'
 import { supabase } from '../lib/supabase.js'
 
