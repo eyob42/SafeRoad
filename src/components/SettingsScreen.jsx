@@ -1,11 +1,11 @@
 import { useState } from 'react'
+import { LogOut, Moon, Navigation, Radio, Sun } from 'lucide-react'
 import { useSession } from '../hooks/useSession.jsx'
 import { supabase } from '../lib/supabase.js'
 
-// Ginchi waypoint — fixed pin for the far-away test
 const GINCHI = { lat: 9.0167, lng: 38.1333 }
 
-export default function SettingsScreen({ onStartDemo, onLogout }) {
+export default function SettingsScreen({ onStartDemo, onLogout, dark, onToggleTheme }) {
   const { displayName, logout } = useSession()
   const [farBusy, setFarBusy]   = useState(false)
   const [farMsg, setFarMsg]     = useState('')
@@ -18,42 +18,31 @@ export default function SettingsScreen({ onStartDemo, onLogout }) {
   async function handleFarAwayTest() {
     setFarBusy(true)
     setFarMsg('')
-
-    // Always use the real GPS, not demo override
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
-        const reporterLat = pos.coords.latitude
-        const reporterLng = pos.coords.longitude
-
         try {
           const { data, error } = await supabase.rpc('submit_report', {
             p_type:         'security',
             p_lat:          GINCHI.lat,
             p_lng:          GINCHI.lng,
-            p_reporter_lat: reporterLat,
-            p_reporter_lng: reporterLng,
+            p_reporter_lat: pos.coords.latitude,
+            p_reporter_lng: pos.coords.longitude,
           })
-
           if (error) throw error
-
           const owned = JSON.parse(localStorage.getItem('sr_ownReportIds') || '[]')
           owned.push(data.id)
           localStorage.setItem('sr_ownReportIds', JSON.stringify(owned))
-
-          if (data.status === 'suspicious') {
-            setFarMsg('✓ ሪፖርቱ ተልኳል — ጥርጣሬ ሁናቴ')
-          } else {
-            setFarMsg(`✓ ሪፖርቱ ተልኳል (${data.status})`)
-          }
+          setFarMsg(data.status === 'suspicious'
+            ? '✓ ሪፖርቱ ተልኳል — ጥርጣሬ ሁናቴ'
+            : `✓ ሪፖርቱ ተልኳል (${data.status})`)
         } catch (err) {
-          console.error(err)
           setFarMsg('ስህተት: ' + (err.message || 'እንደገና ይሞክሩ'))
         } finally {
           setFarBusy(false)
         }
       },
       (err) => {
-        setFarMsg('ቦታ ማግኘት አልተቻለም: ' + err.message)
+        setFarMsg('ቦታ ማግኘት አልተቻለም')
         setFarBusy(false)
       },
       { timeout: 8000, maximumAge: 30000 }
@@ -61,70 +50,71 @@ export default function SettingsScreen({ onStartDemo, onLogout }) {
   }
 
   return (
-    <div className="flex flex-col h-full bg-slate-900 text-white overflow-y-auto">
-      <div className="px-4 py-6">
-        <h1 className="text-lg font-bold mb-6">ቅንብሮች</h1>
+    <main className="min-h-dvh bg-brand-light px-5 pb-28 pt-7 dark:bg-slate-950">
+      <div className="mx-auto max-w-md">
+        <h1 className="text-2xl font-extrabold text-slate-950 dark:text-white">ቅንብሮች</h1>
 
         {/* Profile */}
-        <div className="bg-slate-800 rounded-2xl p-4 mb-4">
-          <p className="text-slate-400 text-xs mb-1">ስም</p>
-          <p className="text-white font-medium">{displayName || '—'}</p>
-        </div>
-
-        {/* Demo mode */}
-        <button
-          onClick={onStartDemo}
-          className="w-full bg-blue-700 hover:bg-blue-600 active:bg-blue-800
-                     rounded-2xl p-4 mb-3 text-left transition"
-        >
-          <p className="font-semibold">🎬 ዴሞ ሁናቴ ጀምር</p>
-          <p className="text-blue-200 text-xs mt-0.5">
-            የሚንቀሳቀስ አሽከርካሪ ሲሙሌሽን — ያለ ምዝገባ ይሠራል
+        <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-5
+                            dark:border-slate-800 dark:bg-slate-900">
+          <p className="text-sm font-bold text-slate-500 dark:text-slate-400">የሚታይ ስም</p>
+          <p className="mt-1 text-lg font-extrabold text-slate-950 dark:text-white">
+            {displayName || '—'}
           </p>
-        </button>
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+            ለሌሎች አሽከርካሪዎች አይታይም
+          </p>
+        </section>
 
-        {/* Far-away report test */}
-        {displayName && (
-          <div className="bg-slate-800 rounded-2xl p-4 mb-3">
-            <p className="font-semibold text-sm mb-1">🔬 ሩቅ ሪፖርት ሙከራ</p>
-            <p className="text-slate-400 text-xs mb-3">
-              ፒንን ጊንቺ ላይ ያስቀምጣል፤ ሪፖርተሩ አሁን ያሉበት ቦታ ርቀቱ
-              10 ኪሜ ከበለጠ "አጠራጣሪ" ይሆናል።
-            </p>
-            <button
-              onClick={handleFarAwayTest}
-              disabled={farBusy}
-              className="w-full bg-orange-700 hover:bg-orange-600 disabled:bg-slate-600
-                         disabled:cursor-not-allowed rounded-xl py-2.5 text-sm
-                         font-semibold transition flex items-center justify-center gap-2"
-            >
-              {farBusy ? (
-                <>
-                  <span className="w-4 h-4 border-2 border-white/30 border-t-white
-                                   rounded-full animate-spin inline-block" />
-                  <span>በመላክ ላይ...</span>
-                </>
-              ) : 'ሩቅ ሪፖርት ላክ'}
-            </button>
-            {farMsg && (
-              <p className={`mt-2 text-xs ${farMsg.startsWith('✓') ? 'text-green-400' : 'text-red-400'}`}>
-                {farMsg}
-              </p>
-            )}
-          </div>
-        )}
-
-        {/* Logout */}
-        {displayName && (
-          <button
-            onClick={handleLogout}
-            className="w-full bg-slate-700 hover:bg-slate-600 active:bg-slate-800
-                       rounded-2xl p-4 text-left transition"
-          >
-            <p className="font-semibold text-red-400">↩ ውጣ</p>
+        <div className="mt-4 space-y-3">
+          {/* Theme toggle */}
+          <button onClick={onToggleTheme} className="setting-button">
+            {dark ? <Sun /> : <Moon />}
+            <span>{dark ? 'ብርሃን ገጽታ' : 'ጨለማ ገጽታ'}</span>
           </button>
-        )}
+
+          {/* Demo mode */}
+          <button onClick={onStartDemo} className="setting-button">
+            <Navigation />
+            <span>ዴሞ ሁናቴ ጀምር</span>
+          </button>
+
+          {/* Far-away test */}
+          {displayName && (
+            <div className="rounded-2xl border border-slate-200 bg-white p-4
+                            dark:border-slate-800 dark:bg-slate-900">
+              <p className="font-bold text-sm text-slate-800 dark:text-slate-100">🔬 ሩቅ ሪፖርት ሙከራ</p>
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                ፒንን ጊንቺ ላይ ያስቀምጣል፤ ከ10 ኪሜ በለጠ "አጠራጣሪ" ይሆናል።
+              </p>
+              <button
+                onClick={handleFarAwayTest}
+                disabled={farBusy}
+                className="mt-3 w-full min-h-12 rounded-xl bg-orange-700 font-bold text-white
+                           transition active:scale-[.98] disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {farBusy ? 'በመላክ ላይ...' : 'ሩቅ ሪፖርት ላክ'}
+              </button>
+              {farMsg && (
+                <p className={`mt-2 text-xs font-bold ${farMsg.startsWith('✓') ? 'text-emerald-600' : 'text-red-500'}`}>
+                  {farMsg}
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Logout */}
+          {displayName && (
+            <button
+              onClick={handleLogout}
+              className="setting-button border-red-200 text-red-700
+                         dark:border-red-900 dark:text-red-300"
+            >
+              <LogOut /> <span>ውጣ</span>
+            </button>
+          )}
+        </div>
       </div>
-    </div>
+    </main>
   )
 }

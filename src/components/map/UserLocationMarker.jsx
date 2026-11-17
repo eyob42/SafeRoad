@@ -5,12 +5,12 @@ export default function UserLocationMarker({ position }) {
   return (
     <CircleMarker
       center={[position.lat, position.lng]}
-      radius={8}
+      radius={9}
       pathOptions={{
-        color: '#2563eb',
-        fillColor: '#3b82f6',
-        fillOpacity: 0.9,
-        weight: 2,
+        color: '#fff',
+        fillColor: '#176B45',
+        fillOpacity: 1,
+        weight: 4,
       }}
     >
       <Tooltip direction="top" offset={[0, -8]} permanent={false}>

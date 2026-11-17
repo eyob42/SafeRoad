@@ -1,5 +1,7 @@
+import { ArrowRight, LockKeyhole } from 'lucide-react'
 import { useState } from 'react'
 import { useSession } from '../../hooks/useSession.jsx'
+import Brand from '../ui/Brand.jsx'
 
 export default function LoginForm({ onDemoMode }) {
   const { login, isLoading } = useSession()
@@ -14,61 +16,64 @@ export default function LoginForm({ onDemoMode }) {
     setError('')
     try {
       await login(name)
-      // login() sets displayName → App re-renders to MapScreen automatically
     } catch (err) {
-      // Only block the user for auth-level failures (no session)
       console.error('login error:', err)
       if (err.message === 'no session') {
         setError('ወደ አገልግሎቱ መገናኘት አልተቻለም። ድረ-ገጹን ዳግም ይጫኑ።')
       } else if (err.message === 'empty name') {
         setError('ስም ያስፈልጋል')
       }
-      // For any other error (DB-level), login() doesn't throw — so this won't fire
     } finally {
       setBusy(false)
     }
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center px-4">
-      {/* Logo / title */}
-      <div className="mb-8 text-center">
-        <div className="text-5xl mb-3">🛣️</div>
-        <h1 className="text-3xl font-bold text-white tracking-wide">SafeRoad</h1>
-        <p className="text-slate-400 mt-1 text-sm">አዲስ አበባ — አምቦ</p>
-      </div>
+    <main className="min-h-dvh bg-brand-light px-5 py-8 dark:bg-slate-950">
+      <div className="mx-auto flex min-h-[calc(100dvh-4rem)] max-w-sm flex-col">
+        <div className="pt-[8vh]">
+          <Brand />
+        </div>
+        <div className="mt-12">
+          <h1 className="text-2xl font-extrabold text-slate-950 dark:text-white">
+            ወደ መንገድዎ ይግቡ
+          </h1>
+          <p className="mt-2 text-slate-600 dark:text-slate-300">
+            ሌሎች አሽከርካሪዎችን ያስጠንቅቁ፣ እርስዎም ይጠንቀቁ።
+          </p>
 
-      {/* Card */}
-      <div className="w-full max-w-sm bg-slate-800 rounded-2xl p-6 shadow-xl">
-        <h2 className="text-white text-lg font-semibold mb-4">ወደ መለያዎ ይግቡ</h2>
-
-        <form onSubmit={handleSubmit} noValidate>
-          <label className="block text-slate-300 text-sm mb-1" htmlFor="name">
-            ስም ወይም ስልክ ቁጥር
+          <label
+            htmlFor="name"
+            className="mt-7 block text-sm font-bold text-slate-800 dark:text-slate-200"
+          >
+            የሚታይ ስም
           </label>
           <input
             id="name"
             type="text"
             value={name}
             onChange={e => { setName(e.target.value); setError('') }}
-            placeholder="ስምዎን ወይም ስልክ ቁጥርዎን ያስገቡ"
-            className="w-full bg-slate-700 text-white placeholder-slate-500 border border-slate-600
-                       rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500
-                       focus:ring-1 focus:ring-blue-500 transition"
+            placeholder="ለምሳሌ፦ አሽከርካሪ"
+            className="mt-2 min-h-14 w-full rounded-xl border-2 border-slate-300 bg-white
+                       px-4 text-base text-slate-950 outline-none transition
+                       placeholder:text-slate-400 focus:border-brand focus:ring-4 focus:ring-brand/10
+                       dark:border-slate-700 dark:bg-slate-900 dark:text-white"
             disabled={busy || isLoading}
             autoComplete="off"
           />
 
           {error && (
-            <p className="mt-2 text-red-400 text-xs">{error}</p>
+            <p className="mt-2 text-red-500 text-xs font-bold">{error}</p>
           )}
 
           <button
             type="submit"
+            onClick={handleSubmit}
             disabled={busy || isLoading}
-            className="mt-4 w-full bg-blue-600 hover:bg-blue-500 disabled:bg-slate-600
-                       disabled:cursor-not-allowed text-white font-semibold rounded-xl
-                       py-3 text-sm transition flex items-center justify-center gap-2"
+            className="mt-5 flex min-h-14 w-full items-center justify-center gap-2
+                       rounded-xl bg-brand px-5 font-extrabold text-white shadow-sm
+                       transition hover:bg-brand-dark active:scale-[.98]
+                       disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {busy ? (
               <>
@@ -76,21 +81,26 @@ export default function LoginForm({ onDemoMode }) {
                                  rounded-full animate-spin inline-block" />
                 <span>በመግባት ላይ...</span>
               </>
-            ) : 'ግባ'}
+            ) : (
+              <>ግባ <ArrowRight size={20} /></>
+            )}
           </button>
-        </form>
 
-        {/* Demo mode — available without login */}
-        <div className="mt-4 border-t border-slate-700 pt-4">
           <button
             onClick={onDemoMode}
-            className="w-full text-blue-400 hover:text-blue-300 text-sm py-2
-                       rounded-xl hover:bg-slate-700 transition"
+            className="mt-3 min-h-14 w-full rounded-xl border-2 border-brand bg-transparent
+                       px-5 font-bold text-brand transition active:scale-[.98]
+                       dark:border-brand dark:text-brand"
           >
-            ዴሞ ሁናቴ ጀምር →
+            ዴሞ ሁናቴ ጀምር
           </button>
         </div>
+
+        <div className="mt-auto flex items-center justify-center gap-2 pt-8
+                        text-sm font-medium text-slate-500 dark:text-slate-400">
+          <LockKeyhole size={17} /> ሪፖርቶችዎ ስም-አልባ ናቸው
+        </div>
       </div>
-    </div>
+    </main>
   )
 }

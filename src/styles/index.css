@@ -1,9 +1,116 @@
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Ethiopic:wght@400;500;600;700;800&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Ensure Leaflet map fills its container */
+@layer base {
+  html {
+    font-family: "Noto Sans Ethiopic", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    min-width: 320px;
+    min-height: 100dvh;
+    line-height: 1.6;
+  }
+
+  button {
+    cursor: pointer;
+  }
+
+  button:focus-visible,
+  input:focus-visible {
+    outline: 3px solid #60a5fa;
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  /* Bottom sheet pattern */
+  .sheet {
+    @apply absolute inset-x-0 bottom-[78px] z-[1100] max-h-[75dvh] overflow-y-auto
+           rounded-t-3xl border-t border-slate-200 bg-white px-5 pb-6 pt-3
+           shadow-[0_-14px_50px_rgba(15,23,42,.18)]
+           dark:border-slate-700 dark:bg-slate-950;
+  }
+
+  .sheet-handle {
+    @apply mx-auto mb-3 h-1.5 w-12 rounded-full bg-slate-300 dark:bg-slate-700;
+  }
+
+  .setting-button {
+    @apply flex min-h-14 w-full items-center gap-3 rounded-xl border border-slate-200
+           bg-white px-4 text-left font-bold text-slate-800 shadow-sm
+           transition active:scale-[.98]
+           dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100;
+  }
+}
+
+/* ── Leaflet ────────────────────────────────────────────────────────────── */
 .leaflet-container {
   width: 100%;
   height: 100%;
+  background: #dbe4ea;
+  font-family: "Noto Sans Ethiopic", system-ui, sans-serif;
+}
+
+.dark .leaflet-tile-pane {
+  filter: brightness(0.72) saturate(0.72) contrast(1.15);
+}
+
+/* ── Report marker (rotated teardrop square with Lucide SVG) ─────────────── */
+.report-marker {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border: 4px solid white;
+  border-radius: 15px 15px 15px 3px;
+  color: white;
+  background: var(--marker);
+  box-shadow: 0 4px 12px rgb(15 23 42 / 35%);
+  transform: rotate(-45deg);
+}
+
+.report-marker svg {
+  transform: rotate(45deg);
+}
+
+/* ── Simulated car marker ────────────────────────────────────────────────── */
+.car-marker {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border: 4px solid white;
+  border-radius: 999px;
+  color: white;
+  background: #176B45;
+  box-shadow:
+    0 0 0 8px rgb(23 107 69 / 18%),
+    0 4px 12px rgb(15 23 42 / 30%);
+}
+
+/* ── Place labels on route ───────────────────────────────────────────────── */
+.place-label {
+  border: 0 !important;
+  border-radius: 7px !important;
+  background: rgb(255 255 255 / 88%) !important;
+  box-shadow: 0 1px 5px rgb(15 23 42 / 14%) !important;
+  color: #0f172a !important;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 2px 6px !important;
+  font-family: "Noto Sans Ethiopic", system-ui, sans-serif !important;
+}
+
+.dark .place-label {
+  background: rgb(15 23 42 / 85%) !important;
+  color: #e8f0ea !important;
+}
+
+.place-label::before {
+  display: none;
 }

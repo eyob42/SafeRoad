@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { LoaderCircle } from 'lucide-react'
 import LeafletMap from './LeafletMap.jsx'
 import ReportPanel from '../reports/ReportPanel.jsx'
 import ReportBottomSheet from '../reports/ReportBottomSheet.jsx'
@@ -29,8 +30,10 @@ export default function MapScreen({
   }
 
   return (
-    <div className="flex flex-col h-screen bg-slate-900 overflow-hidden">
-      <div className="flex-1 relative overflow-hidden">
+    <div className="relative mx-auto h-dvh max-w-lg overflow-hidden
+                    bg-slate-100 dark:bg-slate-950">
+      {/* Map fills screen */}
+      <main className="absolute inset-0 bg-slate-200 dark:bg-slate-900">
         <LeafletMap
           reports={reports}
           position={position}
@@ -38,7 +41,14 @@ export default function MapScreen({
           onSelectReport={r => { setSelectedReport(r); setTab('map') }}
         />
 
-        {/* Demo banner + toast — rendered over the map */}
+        {/* OSM attribution */}
+        <div className="absolute bottom-24 left-3 z-[900] rounded-lg bg-white/90 px-2 py-1
+                        text-[10px] font-bold text-slate-600 shadow
+                        dark:bg-slate-900/90 dark:text-slate-300">
+          © OpenStreetMap
+        </div>
+
+        {/* Demo banner */}
         {demoMode && (
           <DemoModeOverlay
             simPosition={simPosition}
@@ -47,49 +57,55 @@ export default function MapScreen({
           />
         )}
 
-        {/* Loading indicator */}
+        {/* Loading overlay */}
         {loading && (
-          <div className="absolute top-12 left-1/2 -translate-x-1/2 z-[1000]
-                          bg-slate-800/90 text-white text-xs px-3 py-1.5
-                          rounded-full flex items-center gap-2">
-            <span className="w-3 h-3 border-2 border-white/30 border-t-white
-                             rounded-full animate-spin inline-block" />
-            ሪፖርቶችን በመጫን ላይ...
+          <div className="absolute inset-0 z-[1200] grid place-items-center
+                          bg-slate-100/90 dark:bg-slate-950/90">
+            <div className="text-center font-bold text-slate-700 dark:text-slate-200">
+              <LoaderCircle className="mx-auto mb-3 animate-spin text-brand" size={32} />
+              ሪፖርቶችን በመጫን ላይ...
+            </div>
+          </div>
+        )}
+
+        {/* Empty state */}
+        {!loading && reports.length === 0 && !demoMode && (
+          <div className="absolute left-1/2 top-24 z-[900] w-[calc(100%-2rem)]
+                          -translate-x-1/2 rounded-xl bg-white/95 p-4 text-center
+                          font-bold text-slate-700 shadow
+                          dark:bg-slate-900/95 dark:text-slate-200">
+            በዚህ መንገድ ላይ አዲስ ሪፖርት የለም
           </div>
         )}
 
         {/* Report submit panel */}
         {tab === 'report' && (
-          <div className="absolute bottom-0 left-0 right-0 z-[1000]">
-            {displayName ? (
-              <ReportPanel
-                position={position}
-                onClose={() => setTab('map')}
-                onSubmitted={() => setTab('map')}
-              />
-            ) : (
-              <div className="bg-slate-800 rounded-t-3xl px-4 pt-4 pb-8 shadow-2xl">
-                <div className="w-10 h-1 bg-slate-600 rounded-full mx-auto mb-4" />
-                <p className="text-slate-300 text-sm text-center mb-3">
-                  ሪፖርት ለማቅረብ መግባት ያስፈልጋል
-                </p>
-                <button onClick={() => handleTab('map')}
-                  className="w-full text-blue-400 text-sm py-2">ዝጋ</button>
-              </div>
-            )}
-          </div>
+          displayName ? (
+            <ReportPanel
+              position={position}
+              onClose={() => setTab('map')}
+              onSubmitted={() => setTab('map')}
+            />
+          ) : (
+            <section className="sheet">
+              <div className="sheet-handle" />
+              <p className="text-slate-400 text-sm text-center mb-3">
+                ሪፖርት ለማቅረብ መግባት ያስፈልጋል
+              </p>
+              <button onClick={() => handleTab('map')}
+                className="w-full text-brand text-sm py-2 font-bold">ዝጋ</button>
+            </section>
+          )
         )}
 
-        {/* Report detail / vote sheet */}
+        {/* Report detail sheet */}
         {selectedReport && tab === 'map' && (
-          <div className="absolute bottom-0 left-0 right-0 z-[1000]">
-            <ReportBottomSheet
-              report={selectedReport}
-              onClose={() => setSelectedReport(null)}
-            />
-          </div>
+          <ReportBottomSheet
+            report={selectedReport}
+            onClose={() => setSelectedReport(null)}
+          />
         )}
-      </div>
+      </main>
 
       <BottomNav active={tab} onTab={handleTab} />
     </div>

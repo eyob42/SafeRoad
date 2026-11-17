@@ -1,22 +1,43 @@
+import { X } from 'lucide-react'
 import { ALERT_STRINGS } from '../../lib/audio.js'
-import { REPORT_CONFIG } from '../map/ReportMarker.jsx'
+import { REPORT_META } from '../../constants/reportMeta.js'
 
-export default function AlertToast({ alert }) {
+export default function AlertToast({ alert, onClose }) {
   if (!alert) return null
-  const cfg  = REPORT_CONFIG[alert.type] ?? REPORT_CONFIG.accident
+  const meta = REPORT_META[alert.type] ?? REPORT_META.accident
+  const Icon = meta.Icon
   const text = ALERT_STRINGS[alert.type] ?? ''
 
   return (
-    <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1100]
-                    max-w-xs w-[90vw] pointer-events-none">
-      <div className="rounded-2xl px-4 py-3 shadow-2xl flex items-center gap-3
-                      animate-bounce-in"
-           style={{ background: cfg.color }}>
-        <span className="text-2xl flex-shrink-0">{cfg.shape}</span>
-        <div>
-          <p className="text-white font-bold text-sm leading-snug">{cfg.label}</p>
-          <p className="text-white/80 text-xs mt-0.5">{text}</p>
+    <div
+      role="alert"
+      className="absolute inset-x-3 top-20 z-[1100] rounded-2xl border-2
+                 bg-white p-4 shadow-2xl dark:bg-slate-900"
+      style={{ borderColor: meta.color }}
+    >
+      <div className="flex gap-3">
+        <span
+          className="grid size-12 shrink-0 place-items-center rounded-xl"
+          style={{ background: meta.bg, color: meta.color }}
+        >
+          <Icon size={28} strokeWidth={2.5} />
+        </span>
+        <div className="flex-1">
+          <p className="font-extrabold" style={{ color: meta.color }}>ጥንቃቄ!</p>
+          <p className="mt-0.5 text-sm font-semibold text-slate-900 dark:text-white">
+            ከፊት ለፊትዎ {meta.label} ሪፖርት ተደርጓል
+          </p>
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{text}</p>
         </div>
+        {onClose && (
+          <button
+            onClick={onClose}
+            aria-label="ዝጋ"
+            className="grid size-12 shrink-0 place-items-center rounded-xl text-slate-600 dark:text-slate-300"
+          >
+            <X size={18} />
+          </button>
+        )}
       </div>
     </div>
   )

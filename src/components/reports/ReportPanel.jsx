@@ -1,12 +1,12 @@
 import { useState } from 'react'
+import { X } from 'lucide-react'
 import { supabase } from '../../lib/supabase.js'
 import ReportTypeButton from './ReportTypeButton.jsx'
-
-const TYPES = ['security', 'blocked', 'accident', 'safe']
+import { REPORT_TYPES } from '../../constants/reportMeta.js'
 
 export default function ReportPanel({ position, onClose, onSubmitted }) {
-  const [busy, setBusy]     = useState(false)
-  const [toast, setToast]   = useState('')
+  const [busy, setBusy]   = useState(false)
+  const [toast, setToast] = useState('')
 
   function showToast(msg) {
     setToast(msg)
@@ -26,7 +26,6 @@ export default function ReportPanel({ position, onClose, onSubmitted }) {
       })
       if (error) throw error
 
-      // Track own reports in localStorage
       const owned = JSON.parse(localStorage.getItem('sr_ownReportIds') || '[]')
       owned.push(data.id)
       localStorage.setItem('sr_ownReportIds', JSON.stringify(owned))
@@ -43,27 +42,35 @@ export default function ReportPanel({ position, onClose, onSubmitted }) {
   }
 
   return (
-    <div className="bg-slate-800 rounded-t-3xl px-4 pt-4 pb-6 shadow-2xl">
-      {/* Handle bar */}
-      <div className="w-10 h-1 bg-slate-600 rounded-full mx-auto mb-4" />
+    <section className="sheet">
+      <div className="sheet-handle" />
 
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-white font-bold text-base">ሪፖርት አቅርብ</h2>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-xl font-extrabold text-slate-950 dark:text-white">ምን ተመለከቱ?</h2>
+          <p className="text-sm text-slate-500 dark:text-slate-400">አንድ ጊዜ ይንኩ — ወዲያው ይላካል</p>
+        </div>
         <button
           onClick={onClose}
-          className="text-slate-400 hover:text-white text-xl leading-none"
           aria-label="ዝጋ"
-        >✕</button>
+          className="grid size-12 place-items-center rounded-xl text-slate-600 dark:text-slate-300"
+        >
+          <X />
+        </button>
       </div>
 
       {!position ? (
-        <div className="bg-orange-900/40 border border-orange-700 rounded-xl p-3 text-orange-300 text-sm">
+        <div
+          role="alert"
+          className="mt-4 rounded-xl border border-amber-300 bg-amber-50 p-4
+                     font-bold text-amber-950 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-100"
+        >
           ሪፖርት ለማቅረብ የቦታ ፈቃድ ያስፈልጋል።
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-2 gap-3">
-            {TYPES.map(t => (
+          <div className="mt-5 grid grid-cols-2 gap-3">
+            {REPORT_TYPES.map(t => (
               <ReportTypeButton
                 key={t}
                 type={t}
@@ -75,7 +82,7 @@ export default function ReportPanel({ position, onClose, onSubmitted }) {
 
           {busy && (
             <div className="mt-3 flex items-center justify-center gap-2 text-slate-400 text-sm">
-              <span className="w-4 h-4 border-2 border-slate-500 border-t-blue-400
+              <span className="w-4 h-4 border-2 border-slate-500 border-t-brand
                                rounded-full animate-spin inline-block" />
               <span>በመላክ ላይ...</span>
             </div>
@@ -84,10 +91,10 @@ export default function ReportPanel({ position, onClose, onSubmitted }) {
       )}
 
       {toast && (
-        <div className="mt-3 bg-slate-700 rounded-xl px-4 py-2 text-center text-sm text-white">
+        <div className="mt-3 bg-slate-700 rounded-xl px-4 py-2 text-center text-sm text-white dark:bg-slate-800">
           {toast}
         </div>
       )}
-    </div>
+    </section>
   )
 }
